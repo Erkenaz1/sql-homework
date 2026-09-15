@@ -33,7 +33,9 @@ jobs:
 
       - name: PostgreSQL дайын болғанша күту
         run: |
-          until pg_isready -h localhost -U testuser; do sleep 1; done
+          until pg_isready -h localhost -U testuser; do
+            sleep 1
+          done
 
       - name: Студенттің SQL файлын орындау
         env:

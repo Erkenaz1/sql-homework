@@ -1,8 +1,66 @@
 -- ============================================
--- SQL HOMEWORK AUTOMATIC CHECKER
+-- Тесты DDL для SQL Homework
 -- ============================================
 
--- Вспомогательная функция проверки
+-- ============================================
+-- 1. Проверка существования таблиц
+-- ============================================
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'departments'
+    ) THEN
+        RAISE EXCEPTION 'ТЕСТ СӘТСІЗ: departments кестесі жоқ';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'teachers'
+    ) THEN
+        RAISE EXCEPTION 'ТЕСТ СӘТСІЗ: teachers кестесі жоқ';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'students'
+    ) THEN
+        RAISE EXCEPTION 'ТЕСТ СӘТСІЗ: students кестесі жоқ';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'courses'
+    ) THEN
+        RAISE EXCEPTION 'ТЕСТ СӘТСІЗ: courses кестесі жоқ';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'enrollments'
+    ) THEN
+        RAISE EXCEPTION 'ТЕСТ СӘТСІЗ: enrollments кестесі жоқ';
+    END IF;
+
+    RAISE NOTICE 'OK: Барлық қажетті кестелер бар';
+END $$;
+
+
+-- ============================================
+-- 2. assert функциясы
+-- ============================================
+
 CREATE OR REPLACE FUNCTION assert(
     condition BOOLEAN,
     message TEXT
@@ -10,69 +68,16 @@ CREATE OR REPLACE FUNCTION assert(
 RETURNS VOID AS $$
 BEGIN
     IF NOT condition THEN
-        RAISE EXCEPTION 'TEST FAILED: %', message;
+        RAISE EXCEPTION 'ТЕСТ СӘТСІЗ: %', message;
     END IF;
+
+    RAISE NOTICE 'OK: %', message;
 END;
 $$ LANGUAGE plpgsql;
 
 
 -- ============================================
--- 1. Проверка существования таблиц
--- ============================================
-
-SELECT assert(
-    EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'departments'
-    ),
-    'Таблица departments не существует'
-);
-
-SELECT assert(
-    EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'teachers'
-    ),
-    'Таблица teachers не существует'
-);
-
-SELECT assert(
-    EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'students'
-    ),
-    'Таблица students не существует'
-);
-
-SELECT assert(
-    EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'courses'
-    ),
-    'Таблица courses не существует'
-);
-
-SELECT assert(
-    EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'enrollments'
-    ),
-    'Таблица enrollments не существует'
-);
-
-
--- ============================================
--- 2. Проверка обязательных столбцов
+-- 3. students кестесіндегі бағандарды тексеру
 -- ============================================
 
 SELECT assert(
@@ -80,10 +85,10 @@ SELECT assert(
         SELECT 1
         FROM information_schema.columns
         WHERE table_schema = 'public'
-        AND table_name = 'students'
-        AND column_name = 'gpa'
+          AND table_name = 'students'
+          AND column_name = 'gpa'
     ),
-    'В students отсутствует столбец gpa'
+    'students.gpa бағаны бар'
 );
 
 SELECT assert(
@@ -91,26 +96,31 @@ SELECT assert(
         SELECT 1
         FROM information_schema.columns
         WHERE table_schema = 'public'
-        AND table_name = 'students'
-        AND column_name = 'department_id'
+          AND table_name = 'students'
+          AND column_name = 'department_id'
     ),
-    'В students отсутствует столбец department_id'
+    'students.department_id бағаны бар'
 );
+
+
+-- ============================================
+-- 4. enrollments.grade бағанын тексеру
+-- ============================================
 
 SELECT assert(
     EXISTS (
         SELECT 1
         FROM information_schema.columns
         WHERE table_schema = 'public'
-        AND table_name = 'enrollments'
-        AND column_name = 'grade'
+          AND table_name = 'enrollments'
+          AND column_name = 'grade'
     ),
-    'В enrollments отсутствует столбец grade'
+    'enrollments.grade бағаны бар'
 );
 
 
 -- ============================================
--- 3. Проверка Primary Key
+-- 5. PRIMARY KEY тексеру
 -- ============================================
 
 SELECT assert(
@@ -118,10 +128,10 @@ SELECT assert(
         SELECT 1
         FROM information_schema.table_constraints
         WHERE table_schema = 'public'
-        AND table_name = 'departments'
-        AND constraint_type = 'PRIMARY KEY'
+          AND table_name = 'departments'
+          AND constraint_type = 'PRIMARY KEY'
     ),
-    'В departments отсутствует PRIMARY KEY'
+    'departments PRIMARY KEY бар'
 );
 
 SELECT assert(
@@ -129,15 +139,15 @@ SELECT assert(
         SELECT 1
         FROM information_schema.table_constraints
         WHERE table_schema = 'public'
-        AND table_name = 'students'
-        AND constraint_type = 'PRIMARY KEY'
+          AND table_name = 'students'
+          AND constraint_type = 'PRIMARY KEY'
     ),
-    'В students отсутствует PRIMARY KEY'
+    'students PRIMARY KEY бар'
 );
 
 
 -- ============================================
--- 4. Проверка Foreign Key
+-- 6. FOREIGN KEY тексеру
 -- ============================================
 
 SELECT assert(
@@ -145,10 +155,10 @@ SELECT assert(
         SELECT 1
         FROM information_schema.table_constraints
         WHERE table_schema = 'public'
-        AND table_name = 'students'
-        AND constraint_type = 'FOREIGN KEY'
+          AND table_name = 'students'
+          AND constraint_type = 'FOREIGN KEY'
     ),
-    'В students отсутствует FOREIGN KEY'
+    'students FOREIGN KEY бар'
 );
 
 SELECT assert(
@@ -156,15 +166,15 @@ SELECT assert(
         SELECT 1
         FROM information_schema.table_constraints
         WHERE table_schema = 'public'
-        AND table_name = 'enrollments'
-        AND constraint_type = 'FOREIGN KEY'
+          AND table_name = 'enrollments'
+          AND constraint_type = 'FOREIGN KEY'
     ),
-    'В enrollments отсутствует FOREIGN KEY'
+    'enrollments FOREIGN KEY бар'
 );
 
 
 -- ============================================
--- 5. Проверка UNIQUE constraint
+-- 7. UNIQUE тексеру
 -- ============================================
 
 SELECT assert(
@@ -172,33 +182,34 @@ SELECT assert(
         SELECT 1
         FROM information_schema.table_constraints
         WHERE table_schema = 'public'
-        AND table_name = 'teachers'
-        AND constraint_type = 'UNIQUE'
+          AND table_name = 'teachers'
+          AND constraint_type = 'UNIQUE'
     ),
-    'В teachers отсутствует UNIQUE constraint'
+    'teachers UNIQUE constraint бар'
 );
 
 
 -- ============================================
--- 6. Проверка CHECK constraint для GPA
+-- 8. CHECK constraint тексеру
 -- ============================================
 
 SELECT assert(
     EXISTS (
         SELECT 1
-        FROM information_schema.check_constraints cc
-        JOIN information_schema.table_constraints tc
-          ON cc.constraint_name = tc.constraint_name
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.constraint_column_usage ccu
+          ON tc.constraint_name = ccu.constraint_name
         WHERE tc.table_schema = 'public'
-        AND tc.table_name = 'students'
-        AND tc.constraint_type = 'CHECK'
+          AND tc.table_name = 'students'
+          AND tc.constraint_type = 'CHECK'
+          AND ccu.column_name = 'gpa'
     ),
-    'В students отсутствует CHECK constraint для GPA'
+    'students.gpa CHECK constraint бар'
 );
 
 
 -- ============================================
--- 7. Проверка INSERT в departments
+-- 9. Тесттік department қосу
 -- ============================================
 
 INSERT INTO departments
@@ -208,29 +219,52 @@ VALUES
 
 
 -- ============================================
--- 8. Проверка CHECK constraint
--- GPA = 9.99 должен быть запрещён
+-- 10. GPA CHECK constraint тесті
 -- ============================================
 
 DO $$
 BEGIN
+
     BEGIN
+
         INSERT INTO students
-            (full_name, gpa, department_id)
-        VALUES
-            ('Invalid Student', 9.99, 1);
+            (
+                first_name,
+                last_name,
+                birth_date,
+                admission_year,
+                gpa,
+                department_id
+            )
+        SELECT
+            'Тест',
+            'Студент',
+            '2000-01-01',
+            2023,
+            9.99,
+            department_id
+        FROM departments
+        LIMIT 1;
 
         RAISE EXCEPTION
-            'TEST FAILED: GPA CHECK constraint не работает';
+            'ТЕСТ СӘТСІЗ: GPA CHECK constraint 9.99 мәнін қабылдады';
+
     EXCEPTION
         WHEN check_violation THEN
-            RAISE NOTICE 'OK: GPA CHECK constraint работает';
+            RAISE NOTICE
+                'OK: GPA CHECK constraint 9.99 мәнін дұрыс қабылдамады';
     END;
+
 END $$;
 
 
 -- ============================================
--- Результат
+-- Барлық тесттер аяқталды
 -- ============================================
 
-SELECT 'ALL TESTS PASSED SUCCESSFULLY!' AS result;
+DO $$
+BEGIN
+    RAISE NOTICE '============================================';
+    RAISE NOTICE 'БАРЛЫҚ SQL ТЕСТТЕР СӘТТІ ӨТТІ!';
+    RAISE NOTICE '============================================';
+END $$;
